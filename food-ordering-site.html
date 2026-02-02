@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshBite - Order Delicious Food Online</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E85A2A;
+            --secondary: #2C3E50;
+            --accent: #F7B731;
+            --bg: #FFF8F3;
+            --card-bg: #FFFFFF;
+            --text: #2C3E50;
+            --text-light: #7F8C8D;
+            --shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+            --shadow-hover: 0 8px 30px rgba(255, 107, 53, 0.25);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        .app-container {
+            max-width: 100%;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideDown 0.5s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .header-content {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .cart-btn {
+            position: relative;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+        
+        .cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .cart-badge {
+            background: white;
+            color: var(--primary);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .admin-btn {
+            background: var(--secondary);
+            border: none;
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-btn:hover {
+            background: #34495e;
+            transform: translateY(-2px);
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2.5rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.8s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1rem;
+            opacity: 0.95;
+        }
+        
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 0.8rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-chip {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.6rem 1.3rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .category-chip.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 640px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .menu-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            animation: scaleIn 0.5s ease;
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #FFE5D9 0%, #FFF8F3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .item-details {
+            padding: 1.2rem;
+        }
+        
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: var(--secondary);
+        }
+        
+        .item-description {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .add-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .add-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal {
+            background: var(--card-bg);
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .modal-content {
+            padding: 1.5rem;
+        }
+        
+        /* Cart */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .cart-item-info h4 {
+            color: var(--secondary);
+            margin-bottom: 0.3rem;
+        }
+        
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .qty-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        
+        .qty-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+        
+        .cart-total {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+        
+        .total-row.final {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-top: 2px solid #ddd;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 1rem;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .checkout-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Admin Panel */
+        .admin-section {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .submit-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.9rem 2rem;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .admin-item {
+            background: var(--card-bg);
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .delete-btn {
+            background: #E74C3C;
+            border: none;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #C0392B;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Payment Form */
+        .payment-form {
+            padding: 1.5rem;
+        }
+        
+        .success-message {
+            background: #2ECC71;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Simulated payment processing
+        const processPayment = (paymentDetails) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simulate 95% success rate
+                    if (Math.random() > 0.05) {
+                        resolve({
+                            success: true,
+                            transactionId: 'TXN' + Date.now(),
+                            message: 'Payment successful!'
+                        });
+                    } else {
+                        reject(new Error('Payment failed. Please try again.'));
+                    }
+                }, 2000);
+            });
+        };
+
+        const App = () => {
+            const [menuItems, setMenuItems] = useState([
+                {
+                    id: 1,
+                    name: 'Margherita Pizza',
+                    description: 'Classic pizza with fresh mozzarella, tomatoes, and basil',
+                    price: 12.99,
+                    category: 'Pizza',
+                    emoji: '🍕'
+                },
+                {
+                    id: 2,
+                    name: 'Cheeseburger',
+                    description: 'Juicy beef patty with cheese, lettuce, and special sauce',
+                    price: 9.99,
+                    category: 'Burgers',
+                    emoji: '🍔'
+                },
+                {
+                    id: 3,
+                    name: 'Caesar Salad',
+                    description: 'Crispy romaine lettuce with parmesan and croutons',
+                    price: 8.49,
+                    category: 'Salads',
+                    emoji: '🥗'
+                },
+                {
+                    id: 4,
+                    name: 'Chicken Tacos',
+                    description: 'Three soft tacos with grilled chicken and fresh toppings',
+                    price: 10.99,
+                    category: 'Mexican',
+                    emoji: '🌮'
+                },
+                {
+                    id: 5,
+                    name: 'Sushi Platter',
+                    description: 'Assorted fresh sushi rolls with wasabi and ginger',
+                    price: 18.99,
+                    category: 'Sushi',
+                    emoji: '🍣'
+                },
+                {
+                    id: 6,
+                    name: 'Pasta Carbonara',
+                    description: 'Creamy pasta with bacon, egg, and parmesan',
+                    price: 13.49,
+                    category: 'Pasta',
+                    emoji: '🍝'
+                }
+            ]);
+
+            const [cart, setCart] = useState([]);
+            const [showCart, setShowCart] = useState(false);
+            const [showAdmin, setShowAdmin] = useState(false);
+            const [selectedCategory, setSelectedCategory] = useState('All');
+            const [showCheckout, setShowCheckout] = useState(false);
+            const [orderComplete, setOrderComplete] = useState(false);
+
+            // Admin form state
+            const [newItem, setNewItem] = useState({
+                name: '',
+                description: '',
+                price: '',
+                category: '',
+                emoji: '🍔'
+            });
+
+            const categories = ['All', ...new Set(menuItems.map(item => item.category))];
+
+            const addToCart = (item) => {
+                const existingItem = cart.find(cartItem => cartItem.id === item.id);
+                if (existingItem) {
+                    setCart(cart.map(cartItem =>
+                        cartItem.id === item.id
+                            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                            : cartItem
+                    ));
+                } else {
+                    setCart([...cart, { ...item, quantity: 1 }]);
+                }
+            };
+
+            const updateQuantity = (id, change) => {
+                setCart(cart.map(item => {
+                    if (item.id === id) {
+                        const newQuantity = item.quantity + change;
+                        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
+                    }
+                    return item;
+                }).filter(item => item.quantity > 0));
+            };
+
+            const removeFromCart = (id) => {
+                setCart(cart.filter(item => item.id !== id));
+            };
+
+            const calculateTotal = () => {
+                return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            };
+
+            const addMenuItem = (e) => {
+                e.preventDefault();
+                const item = {
+                    id: Date.now(),
+                    ...newItem,
+                    price: parseFloat(newItem.price)
+                };
+                setMenuItems([...menuItems, item]);
+                setNewItem({ name: '', description: '', price: '', category: '', emoji: '🍔' });
+            };
+
+            const deleteMenuItem = (id) => {
+                setMenuItems(menuItems.filter(item => item.id !== id));
+            };
+
+            const filteredItems = selectedCategory === 'All'
+                ? menuItems
+                : menuItems.filter(item => item.category === selectedCategory);
+
+            const handleCheckout = async (paymentDetails) => {
+                try {
+                    const result = await processPayment(paymentDetails);
+                    setOrderComplete(true);
+                    setTimeout(() => {
+                        setCart([]);
+                        setShowCart(false);
+                        setShowCheckout(false);
+                        setOrderComplete(false);
+                    }, 3000);
+                } catch (error) {
+                    alert(error.message);
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <div className="header-content">
+                            <div className="logo">FreshBite</div>
+                            <div className="header-actions">
+                                <button className="cart-btn" onClick={() => setShowCart(true)}>
+                                    🛒 Cart
+                                    {cart.length > 0 && (
+                                        <span className="cart-badge">{cart.length}</span>
+                                    )}
+                                </button>
+                                <button className="admin-btn" onClick={() => setShowAdmin(true)}>
+                                    ⚙️ Admin
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="main-content">
+                        <div className="hero">
+                            <h1>Delicious Food,<br/>Delivered Fresh</h1>
+                            <p>Order your favorite meals from the comfort of your home</p>
+                        </div>
+
+                        <div className="categories">
+                            {categories.map(category => (
+                                <button
+                                    key={category}
+                                    className={`category-chip ${selectedCategory === category ? 'active' : ''}`}
+                                    onClick={() => setSelectedCategory(category)}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="menu-grid">
+                            {filteredItems.map(item => (
+                                <div key={item.id} className="menu-item">
+                                    <div className="item-image">{item.emoji}</div>
+                                    <div className="item-details">
+                                        <h3 className="item-name">{item.name}</h3>
+                                        <p className="item-description">{item.description}</p>
+                                        <div className="item-footer">
+                                            <span className="item-price">${item.price.toFixed(2)}</span>
+                                            <button className="add-btn" onClick={() => addToCart(item)}>
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+
+                    {/* Cart Modal */}
+                    {showCart && (
+                        <div className="modal-overlay" onClick={() => !showCheckout && setShowCart(false)}>
+                            <div className="modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Your Cart</h2>
+                                    <button className="close-btn" onClick={() => {
+                                        setShowCart(false);
+                                        setShowCheckout(false);
+                                    }}>×</button>
+                                </div>
+                                <div className="modal-content">
+                                    {!showCheckout ? (
+                                        <>
+                                            {cart.length === 0 ? (
+                                                <div className="empty-state">
+                                                    <div className="empty-state-icon">🛒</div>
+                                                    <h3>Your cart is empty</h3>
+                                                    <p>Add some delicious items to get started!</p>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {cart.map(item => (
+                                                        <div key={item.id} className="cart-item">
+                                                            <div className="cart-item-info">
+                                                                <h4>{item.name}</h4>
+                                                                <span className="cart-item-price">
+                                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                            <div className="quantity-controls">
+                                                                <button className="qty-btn" onClick={() => updateQuantity(item.id, -1)}>-</button>
+                                                                <span>{item.quantity}</span>
+                                                                <button className="qty-btn" onClick={() => updateQuantity(item.id, 1)}>+</button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    <div className="cart-total">
+                                                        <div className="total-row">
+                                                            <span>Subtotal</span>
+                                                            <span>${calculateTotal().toFixed(2)}</span>
+                                                        </div>
+                                                        <div className="total-row">
+                                                            <span>Delivery Fee</span>
+                                                            <span>$3.99</span>
+                                                        </div>
+                                                        <div className="total-row final">
+                                                            <span>Total</span>
+                                                            <span>${(calculateTotal() + 3.99).toFixed(2)}</span>
+                                                        </div>
+                                                        <button className="checkout-btn" onClick={() => setShowCheckout(true)}>
+                                                            Proceed to Checkout
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <CheckoutForm 
+                                            total={(calculateTotal() + 3.99).toFixed(2)} 
+                                            onSubmit={handleCheckout}
+                                            orderComplete={orderComplete}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Admin Modal */}
+                    {showAdmin && (
+                        <div className="modal-overlay" onClick={() => setShowAdmin(false)}>
+                            <div className="modal" onClick={e => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2 className="modal-title">Admin Panel</h2>
+                                    <button className="close-btn" onClick={() => setShowAdmin(false)}>×</button>
+                                </div>
+                                <div className="modal-content">
+                                    <div className="admin-section">
+                                        <h3 className="section-title">Add New Item</h3>
+                                        <form onSubmit={addMenuItem}>
+                                            <div className="form-group">
+                                                <label className="form-label">Item Name</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={newItem.name}
+                                                    onChange={e => setNewItem({...newItem, name: e.target.value})}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Description</label>
+                                                <textarea
+                                                    className="form-textarea"
+                                                    value={newItem.description}
+                                                    onChange={e => setNewItem({...newItem, description: e.target.value})}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Price ($)</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="form-input"
+                                                    value={newItem.price}
+                                                    onChange={e => setNewItem({...newItem, price: e.target.value})}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Category</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={newItem.category}
+                                                    onChange={e => setNewItem({...newItem, category: e.target.value})}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Emoji</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-input"
+                                                    value={newItem.emoji}
+                                                    onChange={e => setNewItem({...newItem, emoji: e.target.value})}
+                                                    maxLength="2"
+                                                />
+                                            </div>
+                                            <button type="submit" className="submit-btn">Add Item</button>
+                                        </form>
+                                    </div>
+
+                                    <div className="admin-section">
+                                        <h3 className="section-title">Manage Items</h3>
+                                        {menuItems.map(item => (
+                                            <div key={item.id} className="admin-item">
+                                                <div>
+                                                    <strong>{item.name}</strong> - ${item.price.toFixed(2)}
+                                                    <div style={{fontSize: '0.9rem', color: 'var(--text-light)'}}>
+                                                        {item.category}
+                                                    </div>
+                                                </div>
+                                                <button className="delete-btn" onClick={() => deleteMenuItem(item.id)}>
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const CheckoutForm = ({ total, onSubmit, orderComplete }) => {
+            const [formData, setFormData] = useState({
+                name: '',
+                email: '',
+                phone: '',
+                address: '',
+                cardNumber: '',
+                cardExpiry: '',
+                cardCvv: ''
+            });
+            const [isProcessing, setIsProcessing] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setIsProcessing(true);
+                await onSubmit(formData);
+                setIsProcessing(false);
+            };
+
+            if (orderComplete) {
+                return (
+                    <div className="success-message">
+                        <div className="success-icon">✅</div>
+                        <h2>Order Placed Successfully!</h2>
+                        <p>Your delicious food is on its way!</p>
+                    </div>
+                );
+            }
+
+            return (
+                <form className="payment-form" onSubmit={handleSubmit}>
+                    <h3 className="section-title">Delivery Details</h3>
+                    <div className="form-group">
+                        <label className="form-label">Full Name</label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            value={formData.name}
+                            onChange={e => setFormData({...formData, name: e.target.value})}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Email</label>
+                        <input
+                            type="email"
+                            className="form-input"
+                            value={formData.email}
+                            onChange={e => setFormData({...formData, email: e.target.value})}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Phone Number</label>
+                        <input
+                            type="tel"
+                            className="form-input"
+                            value={formData.phone}
+                            onChange={e => setFormData({...formData, phone: e.target.value})}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Delivery Address</label>
+                        <textarea
+                            className="form-textarea"
+                            value={formData.address}
+                            onChange={e => setFormData({...formData, address: e.target.value})}
+                            required
+                        />
+                    </div>
+
+                    <h3 className="section-title" style={{marginTop: '1.5rem'}}>Payment Details</h3>
+                    <div className="form-group">
+                        <label className="form-label">Card Number</label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            placeholder="1234 5678 9012 3456"
+                            value={formData.cardNumber}
+                            onChange={e => setFormData({...formData, cardNumber: e.target.value})}
+                            required
+                        />
+                    </div>
+                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
+                        <div className="form-group">
+                            <label className="form-label">Expiry Date</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="MM/YY"
+                                value={formData.cardExpiry}
+                                onChange={e => setFormData({...formData, cardExpiry: e.target.value})}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">CVV</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="123"
+                                maxLength="3"
+                                value={formData.cardCvv}
+                                onChange={e => setFormData({...formData, cardCvv: e.target.value})}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="cart-total">
+                        <div className="total-row final">
+                            <span>Total Amount</span>
+                            <span>${total}</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="checkout-btn" disabled={isProcessing}>
+                        {isProcessing ? 'Processing...' : `Pay $${total}`}
+                    </button>
+                </form>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
